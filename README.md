@@ -8,4 +8,4 @@ To run it, change the 'gex' symlink to point to your copy of the GEX client libr
 
 ![bode1_amplitude.png](bode1_amplitude.png)
 
-![bode1_phase.png.png](bode1_phase.png.png)
+![bode1_phase.png](bode1_phase.png)
