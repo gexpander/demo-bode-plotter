@@ -10,7 +10,7 @@ internal DAC and try it.
 The AD9833 is connected to SPI on pins PA4 (SS), PA5 (SCK), and PA7 (MOSI). 
 Pins PA1 and PA2 are used by the ADC and attach before and after the filter (DUT).
 
-The generator has a very low output amplitude (0.65 V max). To better utilize the
+The generator has low output levels (0.65 V max). To better utilize the
 input range of the ADC, I used OP213 in a non-inverting configuration 
 (resistors 7.5k and 2.2k), with a 10M resistor from the input to GND. This gives us gain
 of around 4.4, enough to reach just under 3V.
