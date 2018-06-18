@@ -7,6 +7,12 @@ from matplotlib import pyplot as plt
 import gex
 import time
 
+# Two presets defined for demoing the plotter with a high-pass and low-pass RC filter
+# made of 1 kOhm and 100 nF
+
+#demo = 'HP'
+demo = 'LP'
+
 class ADG:
     def __init__(self, client:gex.Client):
         self.client = client
@@ -54,17 +60,16 @@ with gex.Client(gex.TrxSerialThread('/dev/ttyACM0')) as client:
     allowed_shift_compensation = -4.5
         
     
-    if False:
+    if demo == 'HP':
       # highpass filter example (corner 340 Hz)
       settling_time_s = (4700*100e-9)*10
-      max_allowed_shift_db = 5
-      allowed_shift_compensation = -4.5
-    
-    
-    if True:
+      max_allowed_shift_db = 5.6
+      allowed_shift_compensation = -5
+
+    if demo == 'LP':
       # lowpass filter example (corner 340 Hz)
       settling_time_s = (4700*100e-9)*10
-      max_allowed_shift_db = 1
+      max_allowed_shift_db = .5
       allowed_shift_compensation = 2
     
      
@@ -90,7 +95,7 @@ with gex.Client(gex.TrxSerialThread('/dev/ttyACM0')) as client:
     
     # ===============================================
     
-    allowed_shift_compensation /= (f_1 - f_0) / f_step
+    #allowed_shift_compensation /= (f_1 - f_0) / f_step
     
     adc = gex.ADC(client, 'adc')
     
@@ -103,6 +108,7 @@ with gex.Client(gex.TrxSerialThread('/dev/ttyACM0')) as client:
     last_db = None
     f = f_0
     first = True
+    begin_allowedshift = max_allowed_shift_db
     while f <= f_1:
         if not first:
           f_step = round(f_step_begin + ((f - f_0) / (f_1 - f_0)) * (f_step_end - f_step_begin))
@@ -112,7 +118,7 @@ with gex.Client(gex.TrxSerialThread('/dev/ttyACM0')) as client:
         #dac.set_frequency(1, f)
         gen.set_frequency(f)        
         
-        max_allowed_shift_db += allowed_shift_compensation
+        max_allowed_shift_db = begin_allowedshift + allowed_shift_compensation * ((f - f_0) / (f_1 - f_0))
 
         # Adjust measurement parameters
         while True:
