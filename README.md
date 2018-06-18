@@ -17,8 +17,8 @@ of around 4.4, enough to reach just under 3V.
 
 ## To run the script
 
-- Change the 'gex' symlink to point to your copy of the GEX client library.
-- Load the attached UNITS.INI file into GEX (intended for GEX Hub)
+- Ensure you used `git clone --recursive`, or use `git submodule init`, `git submodule update`
+- Load the attached UNITS.INI file into GEX (it is intended for GEX Hub)
 - Connect the external circuitry and run the script.
 
 Dependencies - pyplot, numpy, and whatever you need to use the GEX library: typically pyusb or pyserial.
