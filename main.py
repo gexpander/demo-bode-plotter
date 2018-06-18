@@ -7,6 +7,8 @@ from matplotlib import pyplot as plt
 import gex
 import time
 
+use_native_dac = True
+
 class ADG:
     def __init__(self, client:gex.Client):
         self.client = client
@@ -68,9 +70,12 @@ with gex.Client(gex.TrxRawUSB()) as client:
     
      
     # Frequency sweep parameters
-    f_0 = 5
+    #f_0 = 5
+    #f_1 = 5000
+    #f_step = 15
+    f_0 = 10
     f_1 = 5000
-    f_step = 15
+    f_step = 50
     
     # Retry on failure
     retry_count = 5
@@ -91,16 +96,28 @@ with gex.Client(gex.TrxRawUSB()) as client:
     
     adc = gex.ADC(client, 'adc')
     
-    gen = ADG(client)
-    gen.initialize()
+    dac = None
+    gen = None
+    
+    if use_native_dac:
+        print('Using native GEX DAC')
+        dac = gex.DAC(client, 'dac')
+        dac.waveform(1, 'SINE')
+    else:
+        print('Using AD9833 via SPI')
+        gen = ADG(client)
+        gen.initialize()
 
 
     table = []
     
     last_db = None
     for f in range(f_0, f_1, f_step):
-        #dac.set_frequency(1, f)
-        gen.set_frequency(f)
+      
+        if use_native_dac:
+            dac.set_frequency(1, f)
+        else:
+            gen.set_frequency(f)
         
         max_allowed_shift_db += allowed_shift_compensation
 
@@ -148,6 +165,7 @@ with gex.Client(gex.TrxRawUSB()) as client:
 
           y1 = np.max(t[:,0]) - np.min(t[:,0])
           y2 = np.max(t[:,1]) - np.min(t[:,1])
+          print("\x1b[90mU %f, Y %f\x1b[0m" % (y1, y2))
           gain_raw = y2/y1
           gain_db = 20*math.log10(gain_raw)
           
@@ -179,7 +197,10 @@ with gex.Client(gex.TrxRawUSB()) as client:
         if not suc:
           last_db = last_db_in_fail
 
-    gen.wfm_dc()
+    if use_native_dac:
+        dac.dc(1, 2000)
+    else:
+        gen.wfm_dc()
     
     t = np.reshape(np.array(table), [int(len(table) / 3), 3])
 
