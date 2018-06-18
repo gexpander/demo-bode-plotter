@@ -40,7 +40,8 @@ class ADG:
         if freq is not None:
             self.set_frequency(freq)
 
-with gex.Client(gex.TrxRawUSB()) as client:
+#with gex.Client(gex.TrxRawUSB()) as client:
+with gex.Client(gex.TrxSerialThread('/dev/ttyACM0')) as client:
     # ===============================================
       
     # Delay between adjusting input and starting the measurement. 
@@ -64,13 +65,15 @@ with gex.Client(gex.TrxRawUSB()) as client:
       # lowpass filter example (corner 340 Hz)
       settling_time_s = (4700*100e-9)*10
       max_allowed_shift_db = 1
-      allowed_shift_compensation = 1.2
+      allowed_shift_compensation = 2
     
      
     # Frequency sweep parameters
     f_0 = 5
-    f_1 = 5000
-    f_step = 15
+    f_1 = 6000
+    f_step = 5
+    f_step_begin = 5
+    f_step_end = 200
     
     # Retry on failure
     retry_count = 5
@@ -81,7 +84,7 @@ with gex.Client(gex.TrxRawUSB()) as client:
     capture_periods = 10
     
     # Parameters for automatic params adjustment
-    max_allowed_sample_rate = 36000
+    max_allowed_sample_rate = 40000
     max_allowed_nr_periods = 80
     min_samples_per_period = 4
     
@@ -98,9 +101,16 @@ with gex.Client(gex.TrxRawUSB()) as client:
     table = []
     
     last_db = None
-    for f in range(f_0, f_1, f_step):
+    f = f_0
+    first = True
+    while f <= f_1:
+        if not first:
+          f_step = round(f_step_begin + ((f - f_0) / (f_1 - f_0)) * (f_step_end - f_step_begin))
+          f += f_step          
+        first = False      
+      
         #dac.set_frequency(1, f)
-        gen.set_frequency(f)
+        gen.set_frequency(f)        
         
         max_allowed_shift_db += allowed_shift_compensation
 
@@ -187,17 +197,18 @@ with gex.Client(gex.TrxRawUSB()) as client:
     gains = t[:, 1]
     phases = t[:, 2]
 
-    plt.figure()
-    plt.ylabel('Gain (dB)')
-    plt.xlabel('Frequency (Hz)')
-    plt.semilogx(freqs, gains)  # Bode magnitude plot
-    plt.grid()
+    fig = plt.figure()
+    ax1 = fig.add_subplot(211)
+    ax1.set_ylabel('Gain (dB)')
+    ax1.semilogx(freqs, gains)  # Bode magnitude plot
+    ax1.grid()
 
-    plt.figure()
-    plt.ylabel('Phase (deg)')
-    plt.xlabel('Frequency (Hz)')
-    plt.semilogx(freqs, phases)  # Bode phase plot
-    plt.grid()
+    ax2 = fig.add_subplot(212)
+    ax2.set_ylabel('Phase (deg)')
+    ax2.set_xlabel('Frequency (Hz)')
+    ax2.semilogx(freqs, phases)  # Bode phase plot
+    ax2.grid()
+    
     plt.show()
 
 
