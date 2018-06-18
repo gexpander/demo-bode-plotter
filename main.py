@@ -12,6 +12,7 @@ import time
 
 #demo = 'HP'
 demo = 'LP'
+#demo = 'LP2'
 
 class ADG:
     def __init__(self, client:gex.Client):
@@ -58,7 +59,14 @@ with gex.Client(gex.TrxSerialThread('/dev/ttyACM0')) as client:
     max_allowed_shift_db = 5
     # db shift compensation (spread through the frequency sweep to adjust for different slopes)
     allowed_shift_compensation = -4.5
-        
+    
+    # Frequency sweep parameters
+    f_0 = 5
+    f_1 = 6000
+    
+    f_step = 5
+    f_step_begin = 5
+    f_step_end = 200
     
     if demo == 'HP':
       # highpass filter example (corner 340 Hz)
@@ -71,14 +79,15 @@ with gex.Client(gex.TrxSerialThread('/dev/ttyACM0')) as client:
       settling_time_s = (4700*100e-9)*10
       max_allowed_shift_db = .5
       allowed_shift_compensation = 2
+         
+    if demo == 'LP2':
+      # lowpass filter example (corner 340 Hz)
+      settling_time_s = (4700*100e-9)*10
+      max_allowed_shift_db = .5
+      allowed_shift_compensation = 5
+      f_1 = 4500
+      f_step_end = 100
     
-     
-    # Frequency sweep parameters
-    f_0 = 5
-    f_1 = 6000
-    f_step = 5
-    f_step_begin = 5
-    f_step_end = 200
     
     # Retry on failure
     retry_count = 5
@@ -89,9 +98,9 @@ with gex.Client(gex.TrxSerialThread('/dev/ttyACM0')) as client:
     capture_periods = 10
     
     # Parameters for automatic params adjustment
-    max_allowed_sample_rate = 40000
-    max_allowed_nr_periods = 80
-    min_samples_per_period = 4
+    max_allowed_sample_rate = 65000
+    max_allowed_nr_periods = 100
+    min_samples_per_period = 16
     
     # ===============================================
     
@@ -124,6 +133,7 @@ with gex.Client(gex.TrxSerialThread('/dev/ttyACM0')) as client:
         while True:
             desiredf = f*samples_per_period
             if desiredf > max_allowed_sample_rate:
+                desiredf = max_allowed_sample_rate
                 oldspp = samples_per_period
                 samples_per_period = math.ceil(samples_per_period * 0.9)
                 
