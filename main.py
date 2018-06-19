@@ -13,6 +13,7 @@ import time
 #demo = 'HP'
 demo = 'LP'
 #demo = 'LP2'
+#demo = 'LP3' # LT1112 sallenkey at 1 kHz
 
 class ADG:
     def __init__(self, client:gex.Client):
@@ -87,11 +88,19 @@ with gex.Client(gex.TrxSerialThread('/dev/ttyACM0')) as client:
       allowed_shift_compensation = 5
       f_1 = 4500
       f_step_end = 100
+         
+    if demo == 'LP3':
+      # lowpass filter example (corner 340 Hz)
+      settling_time_s = 0.05
+      max_allowed_shift_db = .5
+      allowed_shift_compensation = 5
+      f_1 = 10000
+      f_step_end = 250
     
     
     # Retry on failure
     retry_count = 5
-    retry_delay_s = settling_time_s*10
+    retry_delay_s = settling_time_s*2
     
     # Initial sample granularity
     samples_per_period = 60
